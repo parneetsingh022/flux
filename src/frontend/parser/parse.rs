@@ -2,7 +2,8 @@ use crate::frontend::lexer::token::{Token, TokenType, Location};
 use crate::frontend::parser::ast::{
     Expr,
     LetStmt,
-    Stmt
+    Stmt,
+    Op,
 };
 
 pub struct Parser{
@@ -45,14 +46,15 @@ impl Parser{
     pub fn build_ast(&mut self) -> Vec<Stmt>{
         while let Some(token) = self.peek() {
             match &token.token {
+                TokenType::Eof => break,
                 TokenType::Let => {
                     let location = token.location.clone();
                     self.next();
                     self.parse_let_stmt(location);
                 },
                 _ => {
-                    self.next();
-                    continue//panic!("Unexpected token {:?}", token.token)
+                    let location = token.location.clone();
+                    panic!("Unexpected token {:?} at line {}, column {}.", token.token, location.line, location.column);
                 }
             }
         }
@@ -61,10 +63,7 @@ impl Parser{
     }
 
     fn parse_let_stmt(&mut self, location : Location)  {
-        // 1. We know we are at 'let' because build_ast peeked at it. 
-        // We consume it to move the cursor.
-
-        // 2. Expect an identifier
+        // Expect an identifier
         let id_token = self.consume(TokenType::Identifier(String::new()), "Expected identifier after 'let'");
         
         // Extract the string (since it's inside the enum)
@@ -73,27 +72,76 @@ impl Parser{
             _ => unreachable!(),
         };
 
-        // 3. Expect '='
+        // Expect '='
         self.consume(TokenType::Equal, "Expected '=' after identifier");
 
-        // 4. Expect a value
-        let val_token = self.next().expect("Expected a value");
-
-        let value = match val_token.token {
-            TokenType::IntLiteral(n) => Expr::IntLiteral(n),
-            TokenType::FloatLiteral(f) => Expr::FloatLiteral(f),
-            _ => {
-                let loc = val_token.location.clone();
-                panic!(
-                    "Expected a number at line {}, col {}, but found {:?}", 
-                    loc.line, loc.column, val_token.token
-                );
-            }
-        };
+        // Expect a value
+        let value = self.parse_expression();
 
         // 5. Expect ';'
         self.consume(TokenType::Semicolon, "Expected ';' after statement");
 
         self.ast.push(Stmt::Let(LetStmt { name, value , location}));
     }
+
+    pub fn parse_expression(&mut self) -> Expr {
+        self.parse_precedence(0)
+    }
+
+    fn parse_precedence(&mut self, min_precedence: i32) -> Expr {
+        // 1. Parse the "Left" side (Numbers, Variables, or Parentheses)
+        let mut left = self.parse_primary();
+
+        // 2. Look ahead for an operator
+        while let Some(token) = self.peek() {
+            let precedence = token.token.precedence();
+            
+            // If the next operator has lower precedence than what we're doing, stop
+            if precedence <= min_precedence {
+                break;
+            }
+
+            // Consume the operator
+            let op_token = self.next().unwrap().token.clone();
+            let op = match op_token {
+                TokenType::Plus => Op::Add,
+                TokenType::Minus => Op::Minus,
+                TokenType::Multiply => Op::Multiply,
+                TokenType::Divide => Op::Divide,
+                _ => unreachable!(),
+            };
+
+            // 3. Parse the "Right" side recursively
+            let right = self.parse_precedence(precedence);
+            
+            // Wrap them in a Binary expression
+            left = Expr::Binary(Box::new(left), op, Box::new(right));
+        }
+
+        left
+    }
+
+    fn parse_primary(&mut self) -> Expr {
+        let token = self.next().expect("Expected expression");
+        match &token.token {
+            TokenType::IntLiteral(n) => Expr::IntLiteral(*n),
+            TokenType::FloatLiteral(f) => Expr::FloatLiteral(*f),
+            TokenType::Identifier(name) => Expr::Identifier(name.clone()),
+
+            TokenType::StringLiteral(name) => Expr::StringLiteral(name.clone()),
+            TokenType::CharLiteral(name) => Expr::CharLiteral(name.clone()),
+            
+            // Handle Parentheses: ( expression )
+            TokenType::LPRAN => {
+                let expr = self.parse_expression();
+                self.consume(TokenType::RPRAN, "Expected ')' after expression");
+                expr
+            }
+            
+            _ => panic!("Expected expression at line {}, column {}.", 
+                        token.location.line, token.location.column),
+        }
+    }
 }
+
+

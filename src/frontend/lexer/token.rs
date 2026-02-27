@@ -20,6 +20,17 @@ pub enum TokenType{
     // Operators
     Equal,     // =
     EqualEqual, // ==
+    Plus, // +
+    Minus, // -
+    Multiply, // *
+    Divide, // /
+    Modulus, // %
+    LPRAN, // (
+    RPRAN, // )
+    PlusPlus, // ++
+    MinusMinus, // --
+    Power, // **
+
 
 
     // Others
@@ -33,9 +44,15 @@ impl TokenType{
             _ => None
         }
     }
+
+    pub fn precedence(&self) -> i32 {
+        match self {
+            TokenType::Plus | TokenType::Minus => 1,
+            TokenType::Multiply | TokenType::Divide => 2,
+            _ => 0,
+        }
+    }
 }
-
-
 
 
 /// Location of a token in a file

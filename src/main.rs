@@ -4,14 +4,23 @@ use frontend::lexer::scanner::Lexer;
 use frontend::parser::parse::Parser;
 
 fn main() {
-    let code : &str = "let x = 29;let z = 345.34;";
+    let code : &str = "
+        let z = (\"HEllo world\" + 'd') - 25.6;
+    ";
 
     let mut lexer = Lexer::new(code);
     let tokens = lexer.tokenize();
-    // lexer.print_tokens();
+    
+    // for token in &tokens {
+    //     println!("{:?}", token);
+    // }
+    
 
     let mut parser = Parser::new(tokens);
-    let mut ast = parser.build_ast();
+    let ast = parser.build_ast();
 
-    println!("{:?}", ast);
+    for stmt in &ast {
+        println!("{}", stmt); 
+    }
+    //println!("{:#?}", ast)
 }
