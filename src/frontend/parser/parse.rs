@@ -51,8 +51,8 @@ impl Parser{
                     self.parse_let_stmt(location);
                 },
                 _ => {
-                    self.next();
-                    continue//panic!("Unexpected token {:?}", token.token)
+                    let location = token.location.clone();
+                    panic!("Unexpected token {:?} at line {}, column {}.", token.token, location.line, location.column);
                 }
             }
         }
@@ -61,10 +61,7 @@ impl Parser{
     }
 
     fn parse_let_stmt(&mut self, location : Location)  {
-        // 1. We know we are at 'let' because build_ast peeked at it. 
-        // We consume it to move the cursor.
-
-        // 2. Expect an identifier
+        // Expect an identifier
         let id_token = self.consume(TokenType::Identifier(String::new()), "Expected identifier after 'let'");
         
         // Extract the string (since it's inside the enum)
@@ -73,27 +70,27 @@ impl Parser{
             _ => unreachable!(),
         };
 
-        // 3. Expect '='
+        // Expect '='
         self.consume(TokenType::Equal, "Expected '=' after identifier");
 
-        // 4. Expect a value
-        let val_token = self.next().expect("Expected a value");
-
-        let value = match val_token.token {
-            TokenType::IntLiteral(n) => Expr::IntLiteral(n),
-            TokenType::FloatLiteral(f) => Expr::FloatLiteral(f),
-            _ => {
-                let loc = val_token.location.clone();
-                panic!(
-                    "Expected a number at line {}, col {}, but found {:?}", 
-                    loc.line, loc.column, val_token.token
-                );
-            }
-        };
+        // Expect a value
+        let value = self.parse_expression();
 
         // 5. Expect ';'
         self.consume(TokenType::Semicolon, "Expected ';' after statement");
 
         self.ast.push(Stmt::Let(LetStmt { name, value , location}));
     }
+
+    fn parse_expression(&mut self) -> Expr {
+        let token = self.next().expect("Expected expression");
+        match &token.token {
+            TokenType::IntLiteral(n) => Expr::IntLiteral(*n),
+            TokenType::FloatLiteral(f) => Expr::FloatLiteral(*f),
+            TokenType::Identifier(name) => Expr::Identifier(name.clone()),
+            _ => panic!("Expected expression at line {}, column {}.", token.location.line, token.location.column),
+        }
+    }
 }
+
+

@@ -4,7 +4,10 @@ use frontend::lexer::scanner::Lexer;
 use frontend::parser::parse::Parser;
 
 fn main() {
-    let code : &str = "let x = 29;let z = 345.34;";
+    let code : &str = "
+    let x = 29;
+    let k = x;
+    ";
 
     let mut lexer = Lexer::new(code);
     let tokens = lexer.tokenize();
@@ -13,5 +16,7 @@ fn main() {
     let mut parser = Parser::new(tokens);
     let mut ast = parser.build_ast();
 
-    println!("{:?}", ast);
+    for stmt in &ast {
+        println!("{}", stmt); 
+    }
 }
