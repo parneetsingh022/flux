@@ -20,6 +20,17 @@ pub enum TokenType{
     // Operators
     Equal,     // =
     EqualEqual, // ==
+    Plus, // +
+    Minus, // -
+    Multiply, // *
+    Divide, // /
+    Modulus, // %
+    LPRAN, // (
+    RPRAN, // )
+    PlusPlus, // ++
+    MinusMinus, // --
+    Power, // **
+
 
 
     // Others

@@ -60,6 +60,7 @@ impl Lexer {
                 b'0'..=b'9' => self.read_number(cur, start_line, start_col),
                 b'=' => self.read_equal(start_line, start_col),
                 b';' => self.add_token(TokenType::Semicolon, start_line, start_col),
+                b'+' | b'-' | b'*' | b'/' | b'%' | b'(' | b')'   => self.read_operator(cur,  start_line, start_col),
                 _ => panic!(
                     "Lexer Error: Found unknown character '{}' at line {}, col {}.", 
                     cur as char, self.line, self.column
@@ -125,5 +126,38 @@ impl Lexer {
         }
     }
 
-
+    pub fn read_operator(&mut self, cur : u8, start_line : usize, start_column : usize){
+        let next = self.peek();
+        match cur {
+            b'+' => {
+                if next == Some(b'+') {
+                    self.next(); // Consume the second '+'
+                    self.add_token(TokenType::PlusPlus, start_line, start_column);
+                } else {
+                    self.add_token(TokenType::Plus, start_line, start_column);
+                }
+            },
+            b'-' => {
+                if next == Some(b'-') {
+                    self.next(); // Consume the second '-'
+                    self.add_token(TokenType::MinusMinus, start_line, start_column);
+                } else {
+                    self.add_token(TokenType::Minus, start_line, start_column);
+                }
+            }
+            b'*' => {
+                if next == Some(b'*') {
+                    self.next(); // Consume the second '-'
+                    self.add_token(TokenType::Power, start_line, start_column);
+                } else {
+                    self.add_token(TokenType::Multiply, start_line, start_column);
+                }
+            }
+            b'/' => self.add_token(TokenType::Divide, start_line, start_column),
+            b'%' => self.add_token(TokenType::Modulus, start_line, start_column),
+            b'(' => self.add_token(TokenType::LPRAN, start_line, start_column),
+            b')' => self.add_token(TokenType::RPRAN, start_line, start_column),
+            _ => panic!("Unexpected operator '{}', at line {}, column {}.", cur as char, start_line, start_column)
+        }
+    }
 }
