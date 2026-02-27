@@ -127,6 +127,9 @@ impl Parser{
             TokenType::IntLiteral(n) => Expr::IntLiteral(*n),
             TokenType::FloatLiteral(f) => Expr::FloatLiteral(*f),
             TokenType::Identifier(name) => Expr::Identifier(name.clone()),
+
+            TokenType::StringLiteral(name) => Expr::StringLiteral(name.clone()),
+            TokenType::CharLiteral(name) => Expr::CharLiteral(name.clone()),
             
             // Handle Parentheses: ( expression )
             TokenType::LPRAN => {

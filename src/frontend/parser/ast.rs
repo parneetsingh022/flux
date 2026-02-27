@@ -12,6 +12,8 @@ pub enum Expr {
     FloatLiteral(f64),
     Identifier(String),
     Binary(Box<Expr>, Op, Box<Expr>),
+    StringLiteral(String),
+    CharLiteral(char),
 }
 
 
@@ -36,6 +38,8 @@ impl fmt::Display for Expr {
             Expr::FloatLiteral(fl) => write!(f, "(float {})", fl),
             Expr::Identifier(name) => write!(f, "(Ident {})", name),
             Expr::Binary(left, op, right) => write!(f, "({:?} {} {})", op, left, right),
+            Expr::StringLiteral(name) => write!(f, "(Str \"{}\")", name),
+            Expr::CharLiteral(name) => write!(f, "(Char \'{}\')", name),
         }
     }
 }
