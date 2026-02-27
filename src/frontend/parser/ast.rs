@@ -3,7 +3,7 @@ use std::fmt;
 
 #[derive(Debug)]
 pub enum Op {
-    Add, Subtract, Multiply, Divide,
+    Add, Minus, Multiply, Divide,
 }
 
 #[derive(Debug)]

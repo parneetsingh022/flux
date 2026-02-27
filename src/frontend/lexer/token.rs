@@ -44,6 +44,14 @@ impl TokenType{
             _ => None
         }
     }
+
+    pub fn precedence(&self) -> i32 {
+        match self {
+            TokenType::Plus | TokenType::Minus => 1,
+            TokenType::Multiply | TokenType::Divide => 2,
+            _ => 0,
+        }
+    }
 }
 
 
