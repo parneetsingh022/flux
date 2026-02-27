@@ -5,7 +5,7 @@ use frontend::parser::parse::Parser;
 
 fn main() {
     let code : &str = "
-
+        let x = 'x'
     ";
 
     let mut lexer = Lexer::new(code);
