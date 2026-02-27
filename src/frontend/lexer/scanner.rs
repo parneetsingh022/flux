@@ -66,7 +66,8 @@ impl Lexer {
                 ),
             }
         }
-
+        
+        self.add_token(TokenType::Eof, self.line, self.column);
         self.tokens.clone()
     }
 

@@ -45,6 +45,7 @@ impl Parser{
     pub fn build_ast(&mut self) -> Vec<Stmt>{
         while let Some(token) = self.peek() {
             match &token.token {
+                TokenType::Eof => break,
                 TokenType::Let => {
                     let location = token.location.clone();
                     self.next();

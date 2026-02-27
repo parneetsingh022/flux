@@ -36,8 +36,6 @@ impl TokenType{
 }
 
 
-
-
 /// Location of a token in a file
 #[derive(Debug, Clone, PartialEq)]
 pub struct Location {
